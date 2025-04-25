@@ -1,0 +1,34 @@
+{
+    "manifest_version": 3,
+    "name": "Job Application Tracker",
+    "version": "1.0",
+    "description": "Track job applications and export to Google Sheets or notes",
+    "permissions": [
+      "storage",
+      "activeTab",
+      "scripting",
+      "tabs"
+    ],
+    "host_permissions": [
+        "*://*.job-boards.greenhouse.io/*"
+    ],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/icon_16px.svg",
+        "48": "images/icon_48px.svg",
+        "128": "images/icon_128px.svg"
+      }
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "*://*.job-boards.greenhouse.io/*"
+        ],
+        "js": ["content.js"]
+      }
+    ]
+  }

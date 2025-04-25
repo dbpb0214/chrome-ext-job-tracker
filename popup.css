@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 350px;
+    margin: 0;
+    padding: 16px;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  h1 {
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #1a73e8;
+  }
+  
+  h2 {
+    font-size: 16px;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  
+  .job-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #f8f9fa;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .form-group {
+    margin-bottom: 12px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  
+  input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  textarea {
+    height: 80px;
+    resize: vertical;
+  }
+  
+  button:not(:disabled) {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  
+  button:not(:disabled):hover {
+    background-color: #1557b0;
+  }
+  
+  #add-manually-btn {
+    width: 100%;
+  }
+  
+  .recent-applications {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .application-item {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 0;
+  }
+  
+  .application-item:last-child {
+    border-bottom: none;
+  }
+  
+  .export-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  #export-sheets, #export-csv, #export-notes {
+    width: 100%;
+  }
+  
+  #export-notes {
+    background-color: #fbbc04;
+    color: #202124;
+  }
+  
+  #export-notes:hover {
+    background-color: #f9ab00;
+  }
