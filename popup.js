@@ -18,7 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize date input with today's date
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+
     dateInput.value = formattedDate;
     
     // Get current tab data
