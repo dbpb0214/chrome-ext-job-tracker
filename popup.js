@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // UI sections
     const currentJobSection = document.getElementById('current-job');
     const addManuallyBtn = document.getElementById('add-manually-btn');
+    const addManuallyBtnContainer = document.getElementById("manual-entry")
     const applicationsList = document.getElementById('applications-list');
     
     // Export buttons
@@ -48,8 +49,19 @@ document.addEventListener('DOMContentLoaded', () => {
           // Send message to content script to extract job details
           chrome.tabs.sendMessage(currentTab.id, { action: "getJobDetails" }, (response) => {
             if (response && response.success) {
-              fillJobForm(response.data, currentTab.url);
-              currentJobSection.classList.remove('hidden');
+              chrome.storage.local.get('applications', (data) => {
+                const applications = data.applications || [];
+                const hasDuplicateUrl = applications.some(app => app.url === response.data.url);
+
+                if (hasDuplicateUrl) {
+                  addManuallyBtn.classList.add('hidden')
+                  addManuallyBtnContainer.innerHTML = "<h2>⚠️ This job posting has already been saved ⚠️</h2>"
+                } else {
+                  fillJobForm(response.data);
+                  currentJobSection.classList.remove('hidden');
+                }
+
+              })
             }
           });
         }
