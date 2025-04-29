@@ -11,7 +11,7 @@ Job Application Tracker Chrome Extension helps job seekers organize their job se
 
 ## Features
 
-- **One-Click Job Capture**: Save job listings from popular job boards with a single click
+- **One-Click Job Capture**: Save job listings from popular job boards with a single click while avoiding saving duplicate applications
 - **Smart Data Extraction**: Automatically extracts company, position, and job description details
 - **Status Tracking**: Track application status (Applied, Interview Scheduled, Rejected, Offer, etc.)
 - **Notes**: Add notes for each application
