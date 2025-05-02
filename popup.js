@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Export buttons
     const exportNotesBtn = document.getElementById('export-notes');
+
+    // Delete applications button
+    const deleteAppsBtn = document.getElementById('delete-apps');
     
     // Initialize date input with today's date
     const today = new Date();
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addManuallyBtn.addEventListener('click', showManualEntryForm);
     jobForm.addEventListener('submit', saveApplication);
     exportNotesBtn.addEventListener('click', exportToNotes);
+    deleteAppsBtn.addEventListener('click', deleteApps)
     
     // Functions
     function getCurrentTabInfo() {
@@ -196,5 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
         document.body.removeChild(link);
       });
+    }
+
+    function deleteApps() {
+      chrome.storage.local.get('applications', (data) => {
+        const applications = data.applications || []
+        const emptyApplications = []
+        if (applications.length > 0) {
+          chrome.storage.local.set({ applications: emptyApplications }, () => {
+            // Show success message
+            alert(`${applications.length} applications deleted successfully!`);
+            loadApplications();
+          });
+        } else {
+          alert('There are no applications to delete!')
+        }
+      })
     }
   });
