@@ -10,7 +10,9 @@
       "tabs"
     ],
     "host_permissions": [
-        "*://*.job-boards.greenhouse.io/*"
+        "*://*.job-boards.greenhouse.io/*",
+        "*://*/*?ashby_jid*",
+        "*://*.jobs.ashbyhq.com/*"
     ],
     "action": {
       "default_popup": "popup.html",
@@ -26,7 +28,9 @@
     "content_scripts": [
       {
         "matches": [
-          "*://*.job-boards.greenhouse.io/*"
+          "*://*.job-boards.greenhouse.io/*",
+          "*://*.flocksafety.com/*",
+          "*://*.jobs.ashbyhq.com/*"
         ],
         "js": ["content.js"]
       }

@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function isKnownJobSite(url) {
       const jobSites = [
         'job-boards.greenhouse.io',
+        "jobs.ashbyhq.com"
         // Add more job sites as needed
       ];
       
