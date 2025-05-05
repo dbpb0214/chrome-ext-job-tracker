@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Form elements
+    const applicantForm = document.getElementById("applicant-details-form")
     const jobForm = document.getElementById('job-form');
     const companyInput = document.getElementById('company');
     const positionInput = document.getElementById('position');
@@ -9,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
     
     // UI sections
+    const currentApplicantSection = document.getElementById("current-applicant")
     const currentJobSection = document.getElementById('current-job');
     const addManuallyBtn = document.getElementById('add-manually-btn');
     const addManuallyBtnContainer = document.getElementById("manual-entry")
@@ -20,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delete applications button
     const deleteAppsBtn = document.getElementById('delete-apps');
     
+    // Save applicant details button
+    const saveApplicantDetailsBtn = document.getElementById('save-applicant-details')
+
     // Initialize date input with today's date
     const today = new Date();
     const year = today.getFullYear();
@@ -33,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getCurrentTabInfo();
     
     // Load existing job applications
+    loadApplicantDetails()
     loadApplications();
     
     // Event listeners
@@ -40,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     jobForm.addEventListener('submit', saveApplication);
     exportNotesBtn.addEventListener('click', exportToNotes);
     deleteAppsBtn.addEventListener('click', deleteApps)
-    
+    saveApplicantDetailsBtn.addEventListener('click', saveApplicantDetails)
     // Functions
     function getCurrentTabInfo() {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -163,6 +169,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
+    function loadApplicantDetails() {
+      chrome.storage.local.get('applicant', (data) => {
+        const applicant = data.applicant || [];
+
+        const firstNameElement = document.getElementById('first-name');
+        const lastNameElement = document.getElementById('last-name');
+
+        firstNameElement.value = applicant.firstName
+        lastNameElement.value = applicant.lastName
+      })
+    }
     
     function formatDate(dateString) {
       const [year, month, day] = dateString.split('-');
@@ -217,5 +235,24 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('There are no applications to delete!')
         }
       })
+    }
+
+    function saveApplicantDetails(e) {
+      e.preventDefault();
+      const firstName = e.target.form[0].value
+      const lastName = e.target.form[1].value
+      if (firstName && lastName) {
+        const applicant = {
+          firstName,
+          lastName
+        };
+        chrome.storage.local.set({ applicant }, () => {
+          // Show success message
+          alert('Applicant details saved successfully!');
+          loadApplicantDetails()
+        });
+      } else {
+        alert('Cannot save empty form!');
+      }
     }
   });
