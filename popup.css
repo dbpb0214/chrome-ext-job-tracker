@@ -73,11 +73,32 @@ body {
     background-color: #1557b0;
   }
   
+  #manual-entry {
+    border-bottom: 1px solid royalblue;
+  }
+
   #add-manually-btn {
+    margin: 0px 0px 10px;
     width: 100%;
   }
-  
+
+  #current-applicant {
+    border-bottom: 1px solid royalblue;
+  }
+
+  #applicant-details-form {
+    background-color: cornsilk;
+    padding: 10px;
+  }
+
+  #apply-applicant-details {
+    margin: 10px 0px 10px;
+    width: 100%;
+  }
+
   .recent-applications {
+    background-color: cornsilk;
+    border-bottom: 1px solid royalblue;
     max-height: 200px;
     overflow-y: auto;
   }
