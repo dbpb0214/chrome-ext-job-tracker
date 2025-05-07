@@ -181,11 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastNameElement = document.getElementById('last-name');
         const emailElement = document.getElementById('email');
         const phoneElement = document.getElementById('phone');
+        const linkedInElement = document.getElementById('linkedin')
 
         firstNameElement.value = applicant.firstName || ''; 
         lastNameElement.value = applicant.lastName || '';
         emailElement.value = applicant.email || '';
         phoneElement.value = applicant.phone || '';
+        linkedInElement.value = applicant.linkedin || '';
       })
     }
     
@@ -250,12 +252,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const lastName = e.target.form[1].value
       const email = e.target.form[2].value
       const phone = e.target.form[3].value
+      const linkedin = e.target.form[4].value
 
       chrome.storage.local.get('applicant', (result) => {
         const existingData = result.applicant || {};
         // Handles clearing all fields
         const allFieldsBeingCleared = (
-          firstName === '' && lastName === '' && email === '' && phone === ''
+          firstName === '' && lastName === '' && email === '' && phone === '' && linkedin === ''
         )
         if (allFieldsBeingCleared && Object.keys(existingData).length > 0) {
           if (confirm('Are you sure you want to clear all fields?')) {
@@ -272,26 +275,30 @@ document.addEventListener('DOMContentLoaded', () => {
           firstName,
           lastName,
           email,
-          phone
+          phone,
+          linkedin
         };
 
         const hasTextToSave = applicant.firstName.length > 0 ||
           applicant.lastName.length > 0 ||
           applicant.email.length > 0 ||
-          applicant.phone.length > 0;
+          applicant.phone.length > 0 ||
+          applicant.linkedin.length > 0;
 
         if (hasTextToSave) {
           const clearedFields = [];
           if (existingData.firstName && firstName === '') clearedFields.push('First Name');
           if (existingData.lastName && lastName === '') clearedFields.push('Last Name');
           if (existingData.email && email === '') clearedFields.push('Email');
-          if (existingData.phone && phone === '') clearedFields.push('Phone')
+          if (existingData.phone && phone === '') clearedFields.push('Phone');
+          if (existingData.linkedin && linkedin === '') clearedFields.push('LinkedIn')
 
           const updatedFields = [];
           if (firstName && firstName !== existingData.firstName) updatedFields.push('First Name');
           if (lastName && lastName !== existingData.lastName) updatedFields.push('Last Name');
           if (email && email !== existingData.email) updatedFields.push('Email');
           if (phone && phone !== existingData.phone) updatedFields.push('Phone');
+          if (linkedin && linkedin !== existingData.linkedin) updatedFields.push("LinkedIn")
 
           chrome.storage.local.set({ applicant }, () => {
             // Show which fields were saved/updated
@@ -328,7 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
             firstName: data.applicant.firstName,
             lastName: data.applicant.lastName,
             email: data.applicant.email,
-            phone: data.applicant.phone
+            phone: data.applicant.phone,
+            linkedin: data.applicant.linkedin,
           }
           chrome.tabs.sendMessage(
             currentTab.id,

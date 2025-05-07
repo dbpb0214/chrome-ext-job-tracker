@@ -78,10 +78,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function updateJobApplicationForm(formData) {
-    const jobBoardFirstNameInput = document.querySelectorAll('#first_name')
-    const jobBoardLastNameInput = document.querySelectorAll('#last_name')
-    const jobBoardEmailInput = document.querySelectorAll('#email')
-    const jobBoardPhoneInput = document.querySelectorAll('#phone')
+    const jobBoardFirstNameInput = document.querySelectorAll('#first_name');
+    const jobBoardLastNameInput = document.querySelectorAll('#last_name');
+    const jobBoardEmailInput = document.querySelectorAll('#email');
+    const jobBoardPhoneInput = document.querySelectorAll('#phone');
+
+    const linkedInLabel = Array.from(document.querySelectorAll('label')).find(label =>
+      label.textContent.trim() === 'LinkedIn Profile'
+    );
+    const jobBoardLinkedInInput = document.getElementById(linkedInLabel.getAttribute('for'));
 
     if (jobBoardFirstNameInput.length > 0) {
       jobBoardFirstNameInput[0].value = formData.firstName
@@ -105,5 +110,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       jobBoardPhoneInput[0].value = formData.phone;
       jobBoardPhoneInput[0].dispatchEvent(new Event('input', { bubbles: true }))
       jobBoardPhoneInput[0].dispatchEvent(new Event('change', { bubbles: true }))
+    }
+
+    if (jobBoardLinkedInInput) {
+      jobBoardLinkedInInput.value = formData.linkedin;
+      jobBoardLinkedInInput.dispatchEvent(new Event('input', { bubbles: true}))
+      jobBoardLinkedInInput.dispatchEvent(new Event('change', { bubbles: true}))
     }
   }
