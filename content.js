@@ -4,6 +4,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const jobDetails = extractJobDetails();
       sendResponse({ success: true, data: jobDetails });
     }
+
+    if (request.action === "updateJobApplicationForm") {
+      const formData = request.formData;
+      updateJobApplicationForm(formData);
+      sendResponse({ success: true });
+    }
     
     return true; // Keep the message channel open for async response
   });
@@ -69,4 +75,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     companyName = companyList.join(" ")
     return companyName
+  }
+
+  function updateJobApplicationForm(formData) {
+    const jobBoardFirstNameInput = document.querySelectorAll('#first_name')
+    const jobBoardLastNameInput = document.querySelectorAll('#last_name')
+    const jobBoardEmailInput = document.querySelectorAll('#email')
+    const jobBoardPhoneInput = document.querySelectorAll('#phone')
+
+    if (jobBoardFirstNameInput.length > 0) {
+      jobBoardFirstNameInput[0].value = formData.firstName
+      jobBoardFirstNameInput[0].dispatchEvent(new Event('input', { bubbles: true }))
+      jobBoardFirstNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (jobBoardLastNameInput.length > 0) {
+      jobBoardLastNameInput[0].value = formData.lastName;
+      jobBoardLastNameInput[0].dispatchEvent(new Event('input', { bubbles: true }));
+      jobBoardLastNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (jobBoardEmailInput.length > 0) {
+      jobBoardEmailInput[0].value = formData.email;
+      jobBoardEmailInput[0].dispatchEvent(new Event('input', { bubbles: true }));
+      jobBoardEmailInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (jobBoardPhoneInput.length > 0) {
+      jobBoardPhoneInput[0].value = formData.phone;
+      jobBoardPhoneInput[0].dispatchEvent(new Event('input', { bubbles: true }))
+      jobBoardPhoneInput[0].dispatchEvent(new Event('change', { bubbles: true }))
+    }
   }

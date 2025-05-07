@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Form elements
-    const applicantForm = document.getElementById("applicant-details-form")
     const jobForm = document.getElementById('job-form');
     const companyInput = document.getElementById('company');
     const positionInput = document.getElementById('position');
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date');
     
     // UI sections
-    const currentApplicantSection = document.getElementById("current-applicant")
     const currentJobSection = document.getElementById('current-job');
     const addManuallyBtn = document.getElementById('add-manually-btn');
     const addManuallyBtnContainer = document.getElementById("manual-entry")
@@ -24,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Save applicant details button
     const saveApplicantDetailsBtn = document.getElementById('save-applicant-details')
+
+    // Apply applicant details
+    const applyApplicantDetailsBtn = document.getElementById('apply-applicant-details')
 
     // Initialize date input with today's date
     const today = new Date();
@@ -47,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     exportNotesBtn.addEventListener('click', exportToNotes);
     deleteAppsBtn.addEventListener('click', deleteApps)
     saveApplicantDetailsBtn.addEventListener('click', saveApplicantDetails)
+    applyApplicantDetailsBtn.addEventListener('click', applyApplicantDetails)
+
     // Functions
     function getCurrentTabInfo() {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -172,13 +175,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadApplicantDetails() {
       chrome.storage.local.get('applicant', (data) => {
-        const applicant = data.applicant || [];
-
+        const applicant = data.applicant || {};
+        console.log("applicant on load..: ", applicant)
         const firstNameElement = document.getElementById('first-name');
         const lastNameElement = document.getElementById('last-name');
+        const emailElement = document.getElementById('email');
+        const phoneElement = document.getElementById('phone');
 
-        firstNameElement.value = applicant.firstName
-        lastNameElement.value = applicant.lastName
+        firstNameElement.value = applicant.firstName || ''; 
+        lastNameElement.value = applicant.lastName || '';
+        emailElement.value = applicant.email || '';
+        phoneElement.value = applicant.phone || '';
       })
     }
     
@@ -241,18 +248,97 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const firstName = e.target.form[0].value
       const lastName = e.target.form[1].value
-      if (firstName && lastName) {
+      const email = e.target.form[2].value
+      const phone = e.target.form[3].value
+
+      chrome.storage.local.get('applicant', (result) => {
+        const existingData = result.applicant || {};
+        // Handles clearing all fields
+        const allFieldsBeingCleared = (
+          firstName === '' && lastName === '' && email === '' && phone === ''
+        )
+        if (allFieldsBeingCleared && Object.keys(existingData).length > 0) {
+          if (confirm('Are you sure you want to clear all fields?')) {
+            chrome.storage.local.set({ applicant: {} }, () => {
+              alert('All applicant details cleared!');
+              loadApplicantDetails();
+            });
+          }
+          // If user cancels clearing, do nothing
+          return;
+        }
+
         const applicant = {
           firstName,
-          lastName
+          lastName,
+          email,
+          phone
         };
-        chrome.storage.local.set({ applicant }, () => {
-          // Show success message
-          alert('Applicant details saved successfully!');
-          loadApplicantDetails()
-        });
-      } else {
-        alert('Cannot save empty form!');
-      }
+
+        const hasTextToSave = applicant.firstName.length > 0 ||
+          applicant.lastName.length > 0 ||
+          applicant.email.length > 0 ||
+          applicant.phone.length > 0;
+
+        if (hasTextToSave) {
+          const clearedFields = [];
+          if (existingData.firstName && firstName === '') clearedFields.push('First Name');
+          if (existingData.lastName && lastName === '') clearedFields.push('Last Name');
+          if (existingData.email && email === '') clearedFields.push('Email');
+          if (existingData.phone && phone === '') clearedFields.push('Phone')
+
+          const updatedFields = [];
+          if (firstName && firstName !== existingData.firstName) updatedFields.push('First Name');
+          if (lastName && lastName !== existingData.lastName) updatedFields.push('Last Name');
+          if (email && email !== existingData.email) updatedFields.push('Email');
+          if (phone && phone !== existingData.phone) updatedFields.push('Phone');
+
+          chrome.storage.local.set({ applicant }, () => {
+            // Show which fields were saved/updated
+            let message = '';
+
+            if (updatedFields.length > 0) {
+              message = 'Updated: ' + updatedFields.join(', ') + '. ';
+            }
+
+            if (clearedFields.length > 0) {
+              message += 'Cleared: ' + clearedFields.join(', ') + '. ';
+            }
+
+            // If nothing was specifically updated or cleared, show generic message
+            if (message === '') {
+              message = 'Applicant details saved!';
+            }
+            alert(message);
+            loadApplicantDetails();
+          });
+        } else {
+            alert('Cannot save empty form!');
+        }
+      })
+    }
+
+    function applyApplicantDetails() {
+      chrome.storage.local.get('applicant', (data) => {
+
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const currentTab = tabs[0];
+
+          const formData = {
+            firstName: data.applicant.firstName,
+            lastName: data.applicant.lastName,
+            email: data.applicant.email,
+            phone: data.applicant.phone
+          }
+          chrome.tabs.sendMessage(
+            currentTab.id,
+            { action: "updateJobApplicationForm", formData: formData },
+            (response) => {
+
+            }
+          )
+        })
+      })
+
     }
   });
