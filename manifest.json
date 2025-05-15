@@ -10,12 +10,10 @@
       "tabs"
     ],
     "host_permissions": [
-        "*://*.job-boards.greenhouse.io/*",
-        "*://*/*?ashby_jid*",
-        "*://*.jobs.ashbyhq.com/*"
+      "*://*/*" 
     ],
     "action": {
-      "default_popup": "popup.html",
+      "default_popup": "popup/popup.html",
       "default_icon": {
         "16": "images/icon_16px.svg",
         "48": "images/icon_48px.svg",
@@ -30,7 +28,10 @@
         "matches": [
           "*://*.job-boards.greenhouse.io/*",
           "*://*.flocksafety.com/*",
-          "*://*.jobs.ashbyhq.com/*"
+          "*://*.jobs.ashbyhq.com/*",
+          "*://*/*/career/*",
+          "*://*/careers/*",
+          "*://*/apply/*"
         ],
         "js": ["content.js"]
       }
