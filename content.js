@@ -78,15 +78,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function updateJobApplicationForm(formData) {
-    const jobBoardFirstNameInput = document.querySelectorAll('#first_name');
-    const jobBoardLastNameInput = document.querySelectorAll('#last_name');
-    const jobBoardEmailInput = document.querySelectorAll('#email');
-    const jobBoardPhoneInput = document.querySelectorAll('#phone');
+    const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
+    const jobBoardLastNameInput = document.querySelectorAll('#last_name').length > 0 ? document.querySelectorAll('#last_name') : document.querySelectorAll('input[name="last_name"]');
+    const jobBoardEmailInput = document.querySelectorAll('#email').length === 1 ? document.querySelectorAll('#email') : document.querySelectorAll('input[name="email"]');
+    const jobBoardPhoneInput = document.querySelectorAll('#phone').length > 0 ? document.querySelectorAll('#phone') : document.querySelectorAll('input[name="phone"]');
 
     const linkedInLabel = Array.from(document.querySelectorAll('label')).find(label =>
-      label.textContent.trim() === 'LinkedIn Profile'
-    );
-    const jobBoardLinkedInInput = document.getElementById(linkedInLabel.getAttribute('for'));
+      label.textContent.trim().includes('LinkedIn Profile')
+    ) || null;
+    const jobBoardLinkedInInput =  linkedInLabel ? document.getElementById(linkedInLabel.getAttribute('for')) : null;
 
     if (jobBoardFirstNameInput.length > 0) {
       jobBoardFirstNameInput[0].value = formData.firstName
