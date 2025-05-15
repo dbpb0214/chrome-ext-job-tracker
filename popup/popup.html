@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Job Application Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+  <meta charset="UTF-8">
+</head>
+<body>
+  <div class="container">
+    <h1>Job Application Tracker</h1>
+    <div id="current-applicant">
+      <h2>Applicant details</h2>
+      <form id="applicant-details-form">
+        <div class="form-group">
+          <label>First name:</label>
+          <input type="text" id="first-name" name="first-name" required>
+        </div>
+        <div class="form-group">
+          <label>Last name:</label>
+          <input type="text" id="last-name" name="last-name" required>
+        </div>
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Phone:</label>
+          <input type="tel" id="phone" name="phone" required>
+        </div>
+        <div class="form-group">
+          <label>LinkedIn:</label>
+          <input type="text" id="linkedin" name="linkedin" required>
+        </div>
+        <div class="form-group">
+          <label for="resumeFile">Select PDF Resume:</label>
+          <input type="file" id="resumeFile" class="file-input" accept="application/pdf">
+          <div class="resume-status">
+            <small class="text-muted">Current resume on file: </small>
+            <span id="resumeLabel" class="resume-filename"></span>
+          </div>
+        </div>
+        <button type="submit" id="save-applicant-details">Save Details</button>
+        <button type="submit" id="delete-resume">Delete Resume</button>
+      </form>
+      <button type="submit" id="apply-applicant-details">Apply Applicant Details to Job Posting</button>
+    </div>
+    <div id="current-job" class="job-card hidden">
+      <h2>Detected Job Application</h2>
+      <form id="job-form">
+        <div class="form-group">
+          <label for="company">Company:</label>
+          <input type="text" id="company" name="company" required>
+        </div>
+        <div class="form-group">
+          <label for="position">Position:</label>
+          <input type="text" id="position" name="position" required>
+        </div>
+        <div class="form-group">
+          <label for="url">URL:</label>
+          <input type="text" id="url" name="url" required>
+        </div>
+        <div class="form-group">
+          <label for="status">Status:</label>
+          <select id="status" name="status">
+            <option value="Applied">Applied</option>
+            <option value="To Apply">To Apply</option>
+            <option value="Interview Scheduled">Interview Scheduled</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Offer">Offer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notes">Notes:</label>
+          <textarea id="notes" name="notes"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="date">Application Date:</label>
+          <input type="date" id="date" name="date" required>
+        </div>
+        <button type="submit" id="save-btn">Save Application</button>
+      </form>
+    </div>
+    
+    <div id="manual-entry">
+      <button id="add-manually-btn">Add Application Manually</button>
+    </div>
+    
+    <div class="recent-applications">
+      <h2>Recent Applications</h2>
+      <div id="applications-list"></div>
+    </div>
+    
+    <div class="export-section">
+      <h2>Export Options</h2>
+      <button disabled id="export-sheets">Export to Google Sheets (Coming soon!)</button>
+      <button disabled id="export-csv">Export as CSV (Coming soon!)</button>
+      <button id="export-notes">Export to Notes App</button>
+    </div>
+    <div class="delete-section">
+      <button id="delete-apps">Delete applications</button>
+    </div>
+  </div>
+  
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
