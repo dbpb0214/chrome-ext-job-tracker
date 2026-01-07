@@ -11,7 +11,7 @@ export const applicants = {
         }
 
         let applicant = emptyApplicant
-        if (Object.keys(data.applicant).length > 0) {
+        if (data.applicant && Object.keys(data.applicant).length > 0) {
           applicant = data.applicant
         }
 
@@ -58,7 +58,7 @@ export const applicants = {
         )
 
         const hasExistingDataToClear = (
-          existingData['firstName'].length > 0 && existingData['lastName'].length > 0 && existingData['email'].length > 0 && existingData['phone'].length > 0 && existingData['linkedin'].length > 0
+          existingData['firstName'] && existingData['lastName'] && existingData['email'] && existingData['phone'] && existingData['linkedin']
         )
 
         
