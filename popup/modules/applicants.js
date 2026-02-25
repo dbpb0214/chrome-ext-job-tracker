@@ -164,6 +164,9 @@ export const applicants = {
             email: data.applicant.email,
             phone: data.applicant.phone,
             linkedin: data.applicant.linkedin,
+            resume: data.applicant.resume && data.applicant.resume.length > 0
+              ? data.applicant.resume[0]
+              : null,
           }
           chrome.tabs.sendMessage(
             currentTab.id,

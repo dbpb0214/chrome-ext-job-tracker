@@ -109,6 +109,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ashbyEmailInput.dispatchEvent(new Event('input', { bubbles: true }));
         ashbyEmailInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
+
+      if (formData.resume) {
+        const ashbyResumeLabel = ashbyLabels.find(label => label.textContent.trim() === 'Resume');
+        let ashbyResumeInput = ashbyResumeLabel
+          ? document.getElementById(ashbyResumeLabel.getAttribute('for'))
+          : null;
+        // Fallback: search within the label's parent container
+        if (!ashbyResumeInput && ashbyResumeLabel) {
+          ashbyResumeInput = ashbyResumeLabel.closest('div')?.querySelector('input[type="file"]') || null;
+        }
+        if (ashbyResumeInput) {
+          const { content, originalFileName } = formData.resume;
+          const mimeType = content.split(';')[0].split(':')[1];
+          const base64Data = content.split(',')[1];
+          const byteString = atob(base64Data);
+          const byteArray = new Uint8Array(byteString.length);
+          for (let i = 0; i < byteString.length; i++) {
+            byteArray[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([byteArray], { type: mimeType });
+          const file = new File([blob], originalFileName, { type: mimeType });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          ashbyResumeInput.files = dataTransfer.files;
+          ashbyResumeInput.dispatchEvent(new Event('change', { bubbles: true }));
+          ashbyResumeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
     } else {
       const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
       const jobBoardLastNameInput = document.querySelectorAll('#last_name').length > 0 ? document.querySelectorAll('#last_name') : document.querySelectorAll('input[name="last_name"]');
