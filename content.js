@@ -88,9 +88,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const jobBoardLinkedInInput =  linkedInLabel ? document.getElementById(linkedInLabel.getAttribute('for')) : null;
 
     if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
-      const ashbyNameLabel = Array.from(document.querySelectorAll('label')).find(label =>
-        label.textContent.trim() === 'Name'
-      );
+      const ashbyLabels = Array.from(document.querySelectorAll('label'));
+
+      const ashbyNameLabel = ashbyLabels.find(label => label.textContent.trim() === 'Name');
       const ashbyNameInput = ashbyNameLabel
         ? document.getElementById(ashbyNameLabel.getAttribute('for'))
         : null;
@@ -98,6 +98,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ashbyNameInput.value = `${formData.firstName} ${formData.lastName}`;
         ashbyNameInput.dispatchEvent(new Event('input', { bubbles: true }));
         ashbyNameInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      const ashbyEmailLabel = ashbyLabels.find(label => label.textContent.trim() === 'Email');
+      const ashbyEmailInput = ashbyEmailLabel
+        ? document.getElementById(ashbyEmailLabel.getAttribute('for'))
+        : null;
+      if (ashbyEmailInput) {
+        ashbyEmailInput.value = formData.email;
+        ashbyEmailInput.dispatchEvent(new Event('input', { bubbles: true }));
+        ashbyEmailInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     } else {
       const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
