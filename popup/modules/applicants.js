@@ -179,6 +179,62 @@ export const applicants = {
               }
             }
           )
+
+          if (currentTab.url && currentTab.url.includes('greenhouse.io')) {
+            // Greenhouse's country code dropdown is a React Select component.
+            // The fiber (React internals) is only accessible in the main world,
+            // not from a content script's isolated world. executeScript with
+            // world: 'MAIN' runs directly in the page's JS context, bypassing
+            // both the isolation issue and the page's CSP.
+            chrome.scripting.executeScript({
+              target: { tabId: currentTab.id },
+              world: 'MAIN',
+              func: (linkedinValue) => {
+                // Country code: walk React fiber to call onChange directly
+                const selectControl = document.querySelector('[class*="select__control"]');
+                if (selectControl) {
+                  const fiberKey = Object.keys(selectControl).find(k => k.startsWith('__reactFiber'));
+                  if (fiberKey) {
+                    let fiber = selectControl[fiberKey];
+                    while (fiber) {
+                      const props = fiber.memoizedProps;
+                      if (props?.onChange && props?.options?.length > 0) {
+                        const usOption = props.options.find(opt =>
+                          (opt.label || '').includes('United States') || opt.value === 'US'
+                        ) || props.options[0];
+                        props.onChange(usOption, { action: 'select-option', option: usOption });
+                        break;
+                      }
+                      fiber = fiber.return;
+                    }
+                  }
+                }
+
+                // LinkedIn: walk React fiber to call onChange directly,
+                // same pattern as the country code select above
+                if (linkedinValue) {
+                  const linkedInInput = document.querySelector('[aria-label="LinkedIn Profile"]');
+                  if (linkedInInput) {
+                    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                    nativeSetter.call(linkedInInput, linkedinValue);
+                    const fiberKey = Object.keys(linkedInInput).find(k => k.startsWith('__reactFiber'));
+                    if (fiberKey) {
+                      let fiber = linkedInInput[fiberKey];
+                      while (fiber) {
+                        const props = fiber.memoizedProps;
+                        if (props?.onChange) {
+                          props.onChange({ target: linkedInInput, currentTarget: linkedInInput, type: 'change' });
+                          break;
+                        }
+                        fiber = fiber.return;
+                      }
+                    }
+                  }
+                }
+              },
+              args: [formData.linkedin]
+            });
+          }
         })
       })
 
