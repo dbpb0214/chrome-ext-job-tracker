@@ -287,6 +287,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
 
       if (url.includes('greenhouse.io')) {
+        // Location (City): same pattern as Ashby location — native setter triggers
+        // React Select's search from within the content script (isolated world),
+        // then mousedown + mouseup + click selects the first option.
+        if (formData.location) {
+          const locationInput = document.getElementById('candidate-location');
+          if (locationInput) {
+            const nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            nativeInputSetter.call(locationInput, formData.location);
+            locationInput.dispatchEvent(new Event('input', { bubbles: true }));
+            locationInput.dispatchEvent(new Event('change', { bubbles: true }));
+            const locationObserver = new MutationObserver(() => {
+              const firstOption = document.querySelector('.select__menu [role="option"]');
+              if (firstOption) {
+                locationObserver.disconnect();
+                firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                firstOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                firstOption.click();
+              }
+            });
+            locationObserver.observe(document.body, { childList: true, subtree: true });
+            setTimeout(() => locationObserver.disconnect(), 5000);
+          }
+        }
+
         // Try native <select> first (some Greenhouse pages include a hidden one)
         const nativeCountrySelect = Array.from(document.querySelectorAll('select')).find(select =>
           Array.from(select.options).some(opt => opt.textContent.includes('United States'))
