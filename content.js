@@ -94,14 +94,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
       const ashbyLabels = Array.from(document.querySelectorAll('label'));
 
+      // Ashby uses React controlled inputs. Setting .value directly updates the DOM
+      // visually but React's internal state stays empty, causing validation errors.
+      // Using the native prototype setter forces React to sync its internal state.
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      const fillReactInput = (input, value) => {
+        nativeSetter.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
       const ashbyNameLabel = ashbyLabels.find(label => label.textContent.trim() === 'Name');
       const ashbyNameInput = ashbyNameLabel
         ? document.getElementById(ashbyNameLabel.getAttribute('for'))
         : null;
       if (ashbyNameInput) {
-        ashbyNameInput.value = `${formData.firstName} ${formData.lastName}`;
-        ashbyNameInput.dispatchEvent(new Event('input', { bubbles: true }));
-        ashbyNameInput.dispatchEvent(new Event('change', { bubbles: true }));
+        fillReactInput(ashbyNameInput, `${formData.firstName} ${formData.lastName}`);
       }
 
       const ashbyEmailLabel = ashbyLabels.find(label => label.textContent.trim() === 'Email');
@@ -109,9 +116,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         ? document.getElementById(ashbyEmailLabel.getAttribute('for'))
         : null;
       if (ashbyEmailInput) {
-        ashbyEmailInput.value = formData.email;
-        ashbyEmailInput.dispatchEvent(new Event('input', { bubbles: true }));
-        ashbyEmailInput.dispatchEvent(new Event('change', { bubbles: true }));
+        fillReactInput(ashbyEmailInput, formData.email);
       }
 
       if (formData.resume) {
