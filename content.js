@@ -82,10 +82,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const jobBoardEmailInput = document.querySelectorAll('#email').length === 1 ? document.querySelectorAll('#email') : document.querySelectorAll('input[name="email"]');
     const jobBoardPhoneInput = document.querySelectorAll('#phone').length > 0 ? document.querySelectorAll('#phone') : document.querySelectorAll('input[name="phone"]');
 
-    const linkedInLabel = Array.from(document.querySelectorAll('label')).find(label =>
-      label.textContent.trim().includes('LinkedIn Profile')
-    ) || null;
-    const jobBoardLinkedInInput =  linkedInLabel ? document.getElementById(linkedInLabel.getAttribute('for')) : null;
+    const jobBoardLinkedInInput = document.querySelector('[aria-label="LinkedIn Profile"]')
+      || document.querySelector('input[name="linkedin_profile"]')
+      || (() => {
+        const label = Array.from(document.querySelectorAll('label')).find(l =>
+          l.textContent.trim().includes('LinkedIn Profile')
+        );
+        return label ? document.getElementById(label.getAttribute('for')) : null;
+      })();
 
     if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
       const ashbyLabels = Array.from(document.querySelectorAll('label'));
@@ -167,8 +171,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (jobBoardLinkedInInput) {
-      jobBoardLinkedInInput.value = formData.linkedin;
-      jobBoardLinkedInInput.dispatchEvent(new Event('input', { bubbles: true}))
-      jobBoardLinkedInInput.dispatchEvent(new Event('change', { bubbles: true}))
+      const linkedInNativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      linkedInNativeSetter.call(jobBoardLinkedInInput, formData.linkedin);
+      jobBoardLinkedInInput.dispatchEvent(new Event('input', { bubbles: true }));
+      jobBoardLinkedInInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
