@@ -33,6 +33,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (jobTitleElements.length > 0) {
           jobTitle = jobTitleElements[0].textContent.trim();
       }
+    } else if (url.includes('jobs.lever.co')) {
+      const titleEl = document.querySelector('title');
+      if (titleEl) {
+        const titleText = titleEl.textContent.trim();
+        // Lever titles are typically "Job Title - Company Name" or "Job Title at Company"
+        const dashIndex = titleText.lastIndexOf(' - ');
+        if (dashIndex !== -1) {
+          jobTitle = titleText.substring(0, dashIndex).trim();
+          company = titleText.substring(dashIndex + 3).trim();
+        } else {
+          company = extractCompanyName(titleText);
+        }
+      }
+      const jobTitleEl = document.querySelector('.posting-headline h2');
+      if (jobTitleEl) {
+        jobTitle = jobTitleEl.textContent.trim();
+      }
     } else if (url.includes('?ashby_jid') || url.includes('jobs.ashbyhq.com')) {
       const companyElements = document.querySelectorAll('title');
       if (companyElements.length > 0) {
@@ -91,7 +108,64 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return label ? document.getElementById(label.getAttribute('for')) : null;
       })();
 
-    if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
+    if (url.includes('jobs.lever.co')) {
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+      const fillReactInput = (input, value) => {
+        nativeSetter.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+
+      // Lever wraps inputs directly inside <label> with no `for` attribute.
+      // The label text lives in a nested <div class="application-label">.
+      const findLeverInput = (labelText) => {
+        const labelDiv = Array.from(document.querySelectorAll('div.application-label'))
+          .find(div => div.textContent.trim() === labelText);
+        return labelDiv ? labelDiv.closest('label')?.querySelector('input') : null;
+      };
+
+      const fullNameInput = findLeverInput('Full name') || document.querySelector('input[name="name"]');
+      if (fullNameInput) {
+        fillReactInput(fullNameInput, `${formData.firstName} ${formData.lastName}`);
+      }
+
+      if (formData.location) {
+        const locationInput = findLeverInput('Current location') || document.querySelector('input[name="location"]');
+        if (locationInput) {
+          fillReactInput(locationInput, formData.location);
+        }
+      }
+
+      if (formData.linkedin) {
+        const linkedInInput = findLeverInput('LinkedIn URL') || document.querySelector('input[name="urls[LinkedIn]"]');
+        if (linkedInInput) {
+          fillReactInput(linkedInInput, formData.linkedin);
+        }
+      }
+
+      if (formData.resume) {
+        const resumeInput = document.getElementById('resume-upload-input')
+          || document.querySelector('input[data-qa="input-resume"]')
+          || document.querySelector('input[name="resume"]');
+        if (resumeInput) {
+          const { content, originalFileName } = formData.resume;
+          const mimeType = content.split(';')[0].split(':')[1];
+          const base64Data = content.split(',')[1];
+          const byteString = atob(base64Data);
+          const byteArray = new Uint8Array(byteString.length);
+          for (let i = 0; i < byteString.length; i++) {
+            byteArray[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([byteArray], { type: mimeType });
+          const file = new File([blob], originalFileName, { type: mimeType });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          resumeInput.files = dataTransfer.files;
+          resumeInput.dispatchEvent(new Event('change', { bubbles: true }));
+          resumeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    } else if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
       const ashbyLabels = Array.from(document.querySelectorAll('label'));
 
       // Ashby uses React controlled inputs. Setting .value directly updates the DOM

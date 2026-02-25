@@ -70,7 +70,8 @@
     function isKnownJobSite(url) {
       const jobSites = [
         'job-boards.greenhouse.io',
-        "jobs.ashbyhq.com"
+        "jobs.ashbyhq.com",
+        "jobs.lever.co"
         // Add more job sites as needed
       ];
       
