@@ -186,30 +186,51 @@ export const applicants = {
             }
           )
 
+
           if (currentTab.url && (currentTab.url.includes('jobs.ashbyhq.com') || currentTab.url.includes('?ashby_jid'))) {
-            // Ashby's email field validates that the field was genuinely interacted with.
-            // Simulating a full focus → insertText → change → blur cycle satisfies this.
+            // Ashby's React state ignores DOM events dispatched from the content
+            // script's isolated world. Running in world: 'MAIN' lets us walk the
+            // React fiber tree and call onChange directly, which is the only
+            // reliable way to commit values into Ashby's internal form state.
             chrome.scripting.executeScript({
               target: { tabId: currentTab.id },
               world: 'MAIN',
-              func: (emailValue) => {
-                const emailInput = document.querySelector('input[type="email"]');
-                if (!emailInput) return;
-
+              func: (fullName, emailValue, linkedinValue) => {
                 const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
 
-                emailInput.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
-                nativeSetter.call(emailInput, emailValue);
-                emailInput.dispatchEvent(new InputEvent('input', {
-                  bubbles: true,
-                  cancelable: true,
-                  inputType: 'insertText',
-                  data: emailValue
-                }));
-                emailInput.dispatchEvent(new Event('change', { bubbles: true }));
-                emailInput.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+                const fillViaFiber = (input, value) => {
+                  nativeSetter.call(input, value);
+                  const fiberKey = Object.keys(input).find(k => k.startsWith('__reactFiber'));
+                  if (!fiberKey) return;
+                  let fiber = input[fiberKey];
+                  while (fiber) {
+                    const props = fiber.memoizedProps;
+                    if (props?.onChange) {
+                      props.onChange({ target: input, currentTarget: input, type: 'change' });
+                      break;
+                    }
+                    fiber = fiber.return;
+                  }
+                };
+
+                const findInputByLabel = (labelText) => {
+                  const label = Array.from(document.querySelectorAll('label'))
+                    .find(l => l.textContent.trim() === labelText);
+                  return label ? document.getElementById(label.getAttribute('for')) : null;
+                };
+
+                const nameInput = findInputByLabel('Name');
+                if (nameInput && fullName) fillViaFiber(nameInput, fullName);
+
+                const emailInput = document.querySelector('input[type="email"]') || findInputByLabel('Email');
+                if (emailInput && emailValue) fillViaFiber(emailInput, emailValue);
+
+                const linkedInInput = findInputByLabel('LinkedIn URL')
+                  || findInputByLabel('LinkedIn')
+                  || findInputByLabel('LinkedIn, Github or Website');
+                if (linkedInInput && linkedinValue) fillViaFiber(linkedInInput, linkedinValue);
               },
-              args: [formData.email]
+              args: [`${formData.firstName} ${formData.lastName}`, formData.email, formData.linkedin]
             });
           }
 

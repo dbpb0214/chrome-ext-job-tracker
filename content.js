@@ -168,9 +168,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
       const ashbyLabels = Array.from(document.querySelectorAll('label'));
 
-      // Ashby uses React controlled inputs. Setting .value directly updates the DOM
-      // visually but React's internal state stays empty, causing validation errors.
-      // Using the native prototype setter forces React to sync its internal state.
+      // Ashby uses React controlled inputs. Ashby also requires focus + blur to
+      // mark fields as "touched" for validation. Plain input/change events are not
+      // enough — we must simulate the full interaction cycle the same way a real
+      // user would interact with the field.
       const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       const fillReactInput = (input, value) => {
         nativeSetter.call(input, value);
@@ -204,7 +205,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       const ashbyLinkedInLabel = ashbyLabels.find(label => {
         const text = label.textContent.trim();
-        return text === 'LinkedIn, Github or Website' || text === 'LinkedIn';
+        return text === 'LinkedIn, Github or Website' || text === 'LinkedIn' || text === 'LinkedIn URL';
       });
       const ashbyLinkedInInput = ashbyLinkedInLabel
         ? document.getElementById(ashbyLinkedInLabel.getAttribute('for'))
@@ -238,31 +239,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
 
       if (formData.resume) {
-        const ashbyResumeLabel = ashbyLabels.find(label => label.textContent.trim() === 'Resume');
-        let ashbyResumeInput = ashbyResumeLabel
-          ? document.getElementById(ashbyResumeLabel.getAttribute('for'))
-          : null;
-        // Fallback: search within the label's parent container
-        if (!ashbyResumeInput && ashbyResumeLabel) {
-          ashbyResumeInput = ashbyResumeLabel.closest('div')?.querySelector('input[type="file"]') || null;
-        }
-        if (ashbyResumeInput) {
-          const { content, originalFileName } = formData.resume;
-          const mimeType = content.split(';')[0].split(':')[1];
-          const base64Data = content.split(',')[1];
-          const byteString = atob(base64Data);
-          const byteArray = new Uint8Array(byteString.length);
-          for (let i = 0; i < byteString.length; i++) {
-            byteArray[i] = byteString.charCodeAt(i);
+        // Delay resume upload so all text fields and the email executeScript
+        // (which dispatches blur) settle first. Ashby shows a warning if the
+        // form is interacted with while a file upload is already in progress.
+        setTimeout(() => {
+          const ashbyResumeLabel = ashbyLabels.find(label => label.textContent.trim() === 'Resume');
+          let ashbyResumeInput = ashbyResumeLabel
+            ? document.getElementById(ashbyResumeLabel.getAttribute('for'))
+            : null;
+          // Fallback: search within the label's parent container
+          if (!ashbyResumeInput && ashbyResumeLabel) {
+            ashbyResumeInput = ashbyResumeLabel.closest('div')?.querySelector('input[type="file"]') || null;
           }
-          const blob = new Blob([byteArray], { type: mimeType });
-          const file = new File([blob], originalFileName, { type: mimeType });
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          ashbyResumeInput.files = dataTransfer.files;
-          ashbyResumeInput.dispatchEvent(new Event('change', { bubbles: true }));
-          ashbyResumeInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+          if (ashbyResumeInput) {
+            const { content, originalFileName } = formData.resume;
+            const mimeType = content.split(';')[0].split(':')[1];
+            const base64Data = content.split(',')[1];
+            const byteString = atob(base64Data);
+            const byteArray = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+              byteArray[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([byteArray], { type: mimeType });
+            const file = new File([blob], originalFileName, { type: mimeType });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            ashbyResumeInput.files = dataTransfer.files;
+            ashbyResumeInput.dispatchEvent(new Event('change', { bubbles: true }));
+            ashbyResumeInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }, 1000);
       }
     } else {
       const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
