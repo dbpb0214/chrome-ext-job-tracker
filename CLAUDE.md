@@ -54,6 +54,7 @@ This is a Manifest V3 Chrome extension with three main components:
   email: string,
   phone: string,
   linkedin: string,
+  location: string,  // e.g. "New York, NY"
   resume: [{
     name: string,
     originalFileName: string,

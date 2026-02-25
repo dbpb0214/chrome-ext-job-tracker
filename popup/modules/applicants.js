@@ -19,15 +19,17 @@ export const applicants = {
         const lastNameElement = document.getElementById('last-name');
         const emailElement = document.getElementById('email');
         const phoneElement = document.getElementById('phone');
-        const linkedInElement = document.getElementById('linkedin')
+        const linkedInElement = document.getElementById('linkedin');
+        const locationElement = document.getElementById('location');
         const resumeFileInputLabel = document.getElementById('resumeLabel');
         const resumeFileInputElement = document.getElementById('resumeFile')
 
-        firstNameElement.value = applicant.firstName; 
+        firstNameElement.value = applicant.firstName;
         lastNameElement.value = applicant.lastName;
         emailElement.value = applicant.email;
         phoneElement.value = applicant.phone;
         linkedInElement.value = applicant.linkedin;
+        locationElement.value = applicant.location || '';
 
         if (applicant['resume'] && applicant['resume'].length > 0) {
           const resumeData = applicant['resume'][0];
@@ -47,14 +49,15 @@ export const applicants = {
       const email = e.target.form[2].value
       const phone = e.target.form[3].value
       const linkedin = e.target.form[4].value
-      const resumeFile = e.target.form[5].files[0]
+      const location = e.target.form[5].value
+      const resumeFile = e.target.form[6].files[0]
 
       chrome.storage.local.get('applicant', async (result) => {
         const existingData = result.applicant || {};
         
         // Handles clearing all fields except resume on file
         const hasUserClearedFields = (
-          firstName === '' && lastName === '' && email === '' && phone === '' && linkedin === ''
+          firstName === '' && lastName === '' && email === '' && phone === '' && linkedin === '' && location === ''
         )
 
         const hasExistingDataToClear = (
@@ -70,6 +73,7 @@ export const applicants = {
               email: '',
               linkedin: '',
               phone: '',
+              location: '',
               resume: existingData['resume'] || []
             }
             chrome.storage.local.set({ applicant: applicantWithOnlyResume }, async () => {
@@ -96,6 +100,7 @@ export const applicants = {
           email,
           phone,
           linkedin,
+          location,
           resume
         };
 
@@ -164,6 +169,7 @@ export const applicants = {
             email: data.applicant.email,
             phone: data.applicant.phone,
             linkedin: data.applicant.linkedin,
+            location: data.applicant.location || '',
             resume: data.applicant.resume && data.applicant.resume.length > 0
               ? data.applicant.resume[0]
               : null,
@@ -179,6 +185,33 @@ export const applicants = {
               }
             }
           )
+
+          if (currentTab.url && (currentTab.url.includes('jobs.ashbyhq.com') || currentTab.url.includes('?ashby_jid'))) {
+            // Ashby's email field validates that the field was genuinely interacted with.
+            // Simulating a full focus → insertText → change → blur cycle satisfies this.
+            chrome.scripting.executeScript({
+              target: { tabId: currentTab.id },
+              world: 'MAIN',
+              func: (emailValue) => {
+                const emailInput = document.querySelector('input[type="email"]');
+                if (!emailInput) return;
+
+                const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+
+                emailInput.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
+                nativeSetter.call(emailInput, emailValue);
+                emailInput.dispatchEvent(new InputEvent('input', {
+                  bubbles: true,
+                  cancelable: true,
+                  inputType: 'insertText',
+                  data: emailValue
+                }));
+                emailInput.dispatchEvent(new Event('change', { bubbles: true }));
+                emailInput.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+              },
+              args: [formData.email]
+            });
+          }
 
           if (currentTab.url && currentTab.url.includes('greenhouse.io')) {
             // Greenhouse's country code dropdown is a React Select component.
@@ -247,7 +280,8 @@ async function saveApplicantToLocalStorage(applicant, existingData) {
   if (existingData.lastName && applicant.lastName === '') clearedFields.push('Last Name');
   if (existingData.email && applicant.email === '') clearedFields.push('Email');
   if (existingData.phone && applicant.phone === '') clearedFields.push('Phone');
-  if (existingData.linkedin && applicant.linkedin === '') clearedFields.push('LinkedIn')
+  if (existingData.linkedin && applicant.linkedin === '') clearedFields.push('LinkedIn');
+  if (existingData.location && applicant.location === '') clearedFields.push('Location');
 
   const updatedFields = [];
   if (applicant.firstName && applicant.firstName !== existingData.firstName) updatedFields.push('First Name');
@@ -255,6 +289,7 @@ async function saveApplicantToLocalStorage(applicant, existingData) {
   if (applicant.email && applicant.email !== existingData.email) updatedFields.push('Email');
   if (applicant.phone && applicant.phone !== existingData.phone) updatedFields.push('Phone');
   if (applicant.linkedin && applicant.linkedin !== existingData.linkedin) updatedFields.push("LinkedIn");
+  if (applicant.location && applicant.location !== existingData.location) updatedFields.push("Location");
   if (applicant.resumeFile && applicant.resumeFile !== existingData.resumeFile) updatedFields.push("Resume File");
 
   chrome.storage.local.set({ applicant }, () => {

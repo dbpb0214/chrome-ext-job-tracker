@@ -101,6 +101,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const fillReactInput = (input, value) => {
         nativeSetter.call(input, value);
         input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
       };
 
       const ashbyNameLabel = ashbyLabels.find(label => label.textContent.trim() === 'Name');
@@ -117,6 +118,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         : null;
       if (ashbyEmailInput) {
         fillReactInput(ashbyEmailInput, formData.email);
+      }
+
+      const ashbyPhoneLabel = ashbyLabels.find(label => label.textContent.trim() === 'Phone Number');
+      const ashbyPhoneInput = ashbyPhoneLabel
+        ? document.getElementById(ashbyPhoneLabel.getAttribute('for'))
+        : null;
+      if (ashbyPhoneInput) {
+        fillReactInput(ashbyPhoneInput, formData.phone);
+      }
+
+      const ashbyLinkedInLabel = ashbyLabels.find(label => label.textContent.trim() === 'LinkedIn, Github or Website');
+      const ashbyLinkedInInput = ashbyLinkedInLabel
+        ? document.getElementById(ashbyLinkedInLabel.getAttribute('for'))
+        : null;
+      if (ashbyLinkedInInput) {
+        fillReactInput(ashbyLinkedInInput, formData.linkedin);
+      }
+
+      if (formData.location) {
+        const ashbyLocationLabel = ashbyLabels.find(label => label.textContent.trim() === 'Location');
+        let ashbyLocationInput = ashbyLocationLabel
+          ? document.getElementById(ashbyLocationLabel.getAttribute('for'))
+          : null;
+        if (!ashbyLocationInput && ashbyLocationLabel) {
+          ashbyLocationInput = ashbyLocationLabel.closest('div')?.querySelector('input[role="combobox"]') || null;
+        }
+        if (ashbyLocationInput) {
+          fillReactInput(ashbyLocationInput, formData.location);
+          const observer = new MutationObserver(() => {
+            const firstOption = document.querySelector('[role="listbox"] [role="option"]');
+            if (firstOption) {
+              observer.disconnect();
+              firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+              firstOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+              firstOption.click();
+            }
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+          setTimeout(() => observer.disconnect(), 3000);
+        }
       }
 
       if (formData.resume) {
