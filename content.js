@@ -128,7 +128,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         fillReactInput(ashbyPhoneInput, formData.phone);
       }
 
-      const ashbyLinkedInLabel = ashbyLabels.find(label => label.textContent.trim() === 'LinkedIn, Github or Website');
+      const ashbyLinkedInLabel = ashbyLabels.find(label => {
+        const text = label.textContent.trim();
+        return text === 'LinkedIn, Github or Website' || text === 'LinkedIn';
+      });
       const ashbyLinkedInInput = ashbyLinkedInLabel
         ? document.getElementById(ashbyLinkedInLabel.getAttribute('for'))
         : null;
