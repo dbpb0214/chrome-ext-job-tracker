@@ -161,18 +161,60 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         jobBoardLastNameInput[0].dispatchEvent(new Event('input', { bubbles: true }));
         jobBoardLastNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
       }
+
+      if (url.includes('greenhouse.io')) {
+        // Try native <select> first (some Greenhouse pages include a hidden one)
+        const nativeCountrySelect = Array.from(document.querySelectorAll('select')).find(select =>
+          Array.from(select.options).some(opt => opt.textContent.includes('United States'))
+        );
+
+        if (nativeCountrySelect) {
+          const usOption = Array.from(nativeCountrySelect.options).find(opt =>
+            opt.textContent.includes('United States')
+          );
+          if (usOption) {
+            const nativeSelectSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+            nativeSelectSetter.call(nativeCountrySelect, usOption.value);
+            nativeCountrySelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+
+        if (formData.resume) {
+          const resumeInput = document.querySelector('input[name="resume"]')
+            || document.querySelector('input[type="file"]');
+          if (resumeInput) {
+            const { content, originalFileName } = formData.resume;
+            const mimeType = content.split(';')[0].split(':')[1];
+            const base64Data = content.split(',')[1];
+            const byteString = atob(base64Data);
+            const byteArray = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+              byteArray[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([byteArray], { type: mimeType });
+            const file = new File([blob], originalFileName, { type: mimeType });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            resumeInput.files = dataTransfer.files;
+            resumeInput.dispatchEvent(new Event('change', { bubbles: true }));
+            resumeInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
     }
 
+    const inputNativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+
     if (jobBoardEmailInput.length > 0) {
-      jobBoardEmailInput[0].value = formData.email;
+      inputNativeSetter.call(jobBoardEmailInput[0], formData.email);
       jobBoardEmailInput[0].dispatchEvent(new Event('input', { bubbles: true }));
       jobBoardEmailInput[0].dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     if (jobBoardPhoneInput.length > 0) {
-      jobBoardPhoneInput[0].value = formData.phone;
-      jobBoardPhoneInput[0].dispatchEvent(new Event('input', { bubbles: true }))
-      jobBoardPhoneInput[0].dispatchEvent(new Event('change', { bubbles: true }))
+      inputNativeSetter.call(jobBoardPhoneInput[0], formData.phone);
+      jobBoardPhoneInput[0].dispatchEvent(new Event('input', { bubbles: true }));
+      jobBoardPhoneInput[0].dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     if (jobBoardLinkedInInput) {
