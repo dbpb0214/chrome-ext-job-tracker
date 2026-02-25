@@ -78,8 +78,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   function updateJobApplicationForm(formData) {
-    const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
-    const jobBoardLastNameInput = document.querySelectorAll('#last_name').length > 0 ? document.querySelectorAll('#last_name') : document.querySelectorAll('input[name="last_name"]');
+    const url = window.location.href;
     const jobBoardEmailInput = document.querySelectorAll('#email').length === 1 ? document.querySelectorAll('#email') : document.querySelectorAll('input[name="email"]');
     const jobBoardPhoneInput = document.querySelectorAll('#phone').length > 0 ? document.querySelectorAll('#phone') : document.querySelectorAll('input[name="phone"]');
 
@@ -88,16 +87,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     ) || null;
     const jobBoardLinkedInInput =  linkedInLabel ? document.getElementById(linkedInLabel.getAttribute('for')) : null;
 
-    if (jobBoardFirstNameInput.length > 0) {
-      jobBoardFirstNameInput[0].value = formData.firstName
-      jobBoardFirstNameInput[0].dispatchEvent(new Event('input', { bubbles: true }))
-      jobBoardFirstNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
-    }
+    if (url.includes('jobs.ashbyhq.com') || url.includes('?ashby_jid')) {
+      const ashbyNameLabel = Array.from(document.querySelectorAll('label')).find(label =>
+        label.textContent.trim() === 'Name'
+      );
+      const ashbyNameInput = ashbyNameLabel
+        ? document.getElementById(ashbyNameLabel.getAttribute('for'))
+        : null;
+      if (ashbyNameInput) {
+        ashbyNameInput.value = `${formData.firstName} ${formData.lastName}`;
+        ashbyNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+        ashbyNameInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    } else {
+      const jobBoardFirstNameInput = document.querySelectorAll('#first_name').length > 0 ? document.querySelectorAll('#first_name') :  document.querySelectorAll('input[name="first_name"]');
+      const jobBoardLastNameInput = document.querySelectorAll('#last_name').length > 0 ? document.querySelectorAll('#last_name') : document.querySelectorAll('input[name="last_name"]');
 
-    if (jobBoardLastNameInput.length > 0) {
-      jobBoardLastNameInput[0].value = formData.lastName;
-      jobBoardLastNameInput[0].dispatchEvent(new Event('input', { bubbles: true }));
-      jobBoardLastNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+      if (jobBoardFirstNameInput.length > 0) {
+        jobBoardFirstNameInput[0].value = formData.firstName
+        jobBoardFirstNameInput[0].dispatchEvent(new Event('input', { bubbles: true }))
+        jobBoardFirstNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      if (jobBoardLastNameInput.length > 0) {
+        jobBoardLastNameInput[0].value = formData.lastName;
+        jobBoardLastNameInput[0].dispatchEvent(new Event('input', { bubbles: true }));
+        jobBoardLastNameInput[0].dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
     if (jobBoardEmailInput.length > 0) {
