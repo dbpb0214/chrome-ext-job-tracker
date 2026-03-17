@@ -71,7 +71,8 @@
       const jobSites = [
         'job-boards.greenhouse.io',
         "jobs.ashbyhq.com",
-        "jobs.lever.co"
+        "jobs.lever.co",
+        "builtinnyc.com"
         // Add more job sites as needed
       ];
       

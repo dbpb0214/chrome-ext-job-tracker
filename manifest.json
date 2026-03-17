@@ -29,6 +29,7 @@
           "*://*.job-boards.greenhouse.io/*",
           "*://*.flocksafety.com/*",
           "*://*.jobs.ashbyhq.com/*",
+          "*://*.builtinnyc.com/*",
           "*://jobs.lever.co/*",
           "*://*/*/career/*",
           "*://*/careers/*",

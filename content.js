@@ -50,6 +50,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (jobTitleEl) {
         jobTitle = jobTitleEl.textContent.trim();
       }
+    } else if (url.includes('builtinnyc.com')) {
+      const companyEl = document.querySelector('[data-id="company-title"]');
+      if (companyEl) {
+        company = companyEl.textContent.trim();
+      }
+      const h1El = document.querySelector('h1');
+      if (h1El) {
+        jobTitle = h1El.textContent.trim();
+      }
     } else if (url.includes('?ashby_jid') || url.includes('jobs.ashbyhq.com')) {
       const companyElements = document.querySelectorAll('title');
       if (companyElements.length > 0) {
@@ -325,6 +334,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             nativeSelectSetter.call(nativeCountrySelect, usOption.value);
             nativeCountrySelect.dispatchEvent(new Event('change', { bubbles: true }));
           }
+        }
+
+        // Greenhouse uses a React Select custom dropdown for Country — the native
+        // select alone doesn't update React state, so validation still fails.
+        // Find the combobox input inside the country field and drive it the same
+        // way we handle the location field.
+        const countryInput = document.getElementById('country-error')
+          ?.parentElement
+          ?.querySelector('input[role="combobox"]');
+
+        if (countryInput) {
+          const countryNativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          countryInput.focus();
+          countryNativeSetter.call(countryInput, 'United States');
+          countryInput.dispatchEvent(new Event('input', { bubbles: true }));
+          countryInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+          const countryObserver = new MutationObserver(() => {
+            const options = document.querySelectorAll('.select__menu [role="option"]');
+            const usOption = Array.from(options).find(opt => opt.textContent.includes('United States'));
+            const targetOption = usOption || options[0];
+            if (targetOption) {
+              countryObserver.disconnect();
+              targetOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+              targetOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+              targetOption.click();
+            }
+          });
+          countryObserver.observe(document.body, { childList: true, subtree: true });
+          setTimeout(() => countryObserver.disconnect(), 5000);
         }
 
         if (formData.resume) {

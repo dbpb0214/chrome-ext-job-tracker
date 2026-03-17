@@ -18,4 +18,13 @@ export function setupEventHandlers() {
     saveApplicantDetailsBtn.addEventListener('click', (e) => aplcnts.save(e))
     applyApplicantDetailsBtn.addEventListener('click', () => aplcnts.applyApplicantDetails())
     deleteResumeBtn.addEventListener('click', (e) => aplcnts.deleteResume(e))
+
+    const copyJobBtn = document.getElementById('copy-job-btn');
+    copyJobBtn.addEventListener('click', () => {
+      const company = document.getElementById('company').value;
+      const position = document.getElementById('position').value;
+      if (company && position) {
+        navigator.clipboard.writeText(`${company} - ${position}`);
+      }
+    });
 }
