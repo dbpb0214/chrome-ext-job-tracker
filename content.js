@@ -37,11 +37,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const titleEl = document.querySelector('title');
       if (titleEl) {
         const titleText = titleEl.textContent.trim();
-        // Lever titles are typically "Job Title - Company Name" or "Job Title at Company"
+        // Lever titles are typically "Company Name - Job Title"
         const dashIndex = titleText.lastIndexOf(' - ');
         if (dashIndex !== -1) {
-          jobTitle = titleText.substring(0, dashIndex).trim();
-          company = titleText.substring(dashIndex + 3).trim();
+          company = titleText.substring(0, dashIndex).trim();
+          jobTitle = titleText.substring(dashIndex + 3).trim();
         } else {
           company = extractCompanyName(titleText);
         }
