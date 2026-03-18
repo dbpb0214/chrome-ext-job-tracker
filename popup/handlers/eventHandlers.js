@@ -24,7 +24,11 @@ export function setupEventHandlers() {
       const company = document.getElementById('company').value;
       const position = document.getElementById('position').value;
       if (company && position) {
-        navigator.clipboard.writeText(`${company} - ${position}`);
+        const searchText = `${company} - ${position}`;
+        navigator.clipboard.writeText(searchText);
+        chrome.tabs.create({
+          url: `https://www.google.com/search?q=${encodeURIComponent(searchText)}`
+        });
       }
     });
 }
