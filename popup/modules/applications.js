@@ -1,5 +1,7 @@
 const applicationsList = document.getElementById('applications-list');
 const currentJobSection = document.getElementById('current-job');
+const addManuallyBtn = document.getElementById('add-manually-btn');
+const addManuallyBtnContainer = document.getElementById('manual-entry');
 
 const jobForm = document.getElementById('job-form');
 const companyInput = document.getElementById('company');
@@ -82,10 +84,13 @@ export const applications = {
         chrome.storage.local.set({ applications }, async () => {
           // Show success message
           alert('Application saved successfully!');
-          
-          // Reset form and refresh list
+
+          // Reset form, hide section, and refresh list
           jobForm.reset();
           dateInput.value = formattedDate;
+          currentJobSection.classList.add('hidden');
+          addManuallyBtn.classList.add('hidden');
+          addManuallyBtnContainer.innerHTML = "<h2>⚠️ This job posting has already been saved ⚠️</h2>";
           await this.get();
         });
       });
@@ -123,16 +128,25 @@ export const applications = {
       });
     },
     showForm() {
-      // Clear form
-      jobForm.reset();
-      dateInput.value = formattedDate;
-      
-      // Get current URL
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        urlInput.value = tabs[0].url;
+        const currentUrl = tabs[0].url;
+        chrome.storage.local.get('applications', (data) => {
+          const applications = data.applications || [];
+          const hasDuplicateUrl = applications.some(app => app.url === currentUrl);
+
+          if (hasDuplicateUrl) {
+            addManuallyBtn.classList.add('hidden');
+            addManuallyBtnContainer.innerHTML = "<h2>⚠️ This job posting has already been saved ⚠️</h2>";
+            return;
+          }
+
+          // Clear form and populate URL
+          jobForm.reset();
+          dateInput.value = formattedDate;
+          urlInput.value = currentUrl;
+          currentJobSection.classList.remove('hidden');
+        });
       });
-      
-      currentJobSection.classList.remove('hidden');
     },
     fillForm(jobData) {
       companyInput.value = jobData.company;
