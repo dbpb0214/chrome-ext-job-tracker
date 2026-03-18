@@ -19,8 +19,8 @@ export function setupEventHandlers() {
     applyApplicantDetailsBtn.addEventListener('click', () => aplcnts.applyApplicantDetails())
     deleteResumeBtn.addEventListener('click', (e) => aplcnts.deleteResume(e))
 
-    const copyJobBtn = document.getElementById('copy-job-btn');
-    copyJobBtn.addEventListener('click', () => {
+    const googleSearchBtn = document.getElementById('google-search-btn');
+    googleSearchBtn.addEventListener('click', () => {
       const company = document.getElementById('company').value;
       const position = document.getElementById('position').value;
       if (company && position) {

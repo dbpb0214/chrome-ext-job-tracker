@@ -11,6 +11,7 @@
     const currentJobSection = document.getElementById('current-job');
     const addManuallyBtn = document.getElementById('add-manually-btn');
     const addManuallyBtnContainer = document.getElementById("manual-entry")
+    const googleSearchBtn = document.getElementById('google-search-btn');
     
     // Initialize date input with today's date
     const today = new Date();
@@ -40,6 +41,11 @@
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const currentTab = tabs[0];
         
+        // Enable Google Search button only on builtinnyc.com
+        if (currentTab.url && currentTab.url.includes('builtinnyc.com')) {
+          googleSearchBtn.disabled = false;
+        }
+
         // Check if current site is a job site
         const isJobSite = isKnownJobSite(currentTab.url);
         

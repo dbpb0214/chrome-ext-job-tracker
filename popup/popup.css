@@ -1,3 +1,17 @@
+#google-search-section {
+  padding-bottom: 12px;
+  border-bottom: 2px solid royalblue;
+  margin-bottom: 4px;
+}
+
+#google-search-btn {
+  width: 100%;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+
 body {
     font-family: Arial, sans-serif;
     width: 350px;
