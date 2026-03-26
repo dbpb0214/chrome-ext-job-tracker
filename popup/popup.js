@@ -50,23 +50,33 @@
         const isJobSite = isKnownJobSite(currentTab.url);
         
         if (isJobSite) {
-          // Send message to content script to extract job details
+          const handleJobDetails = (response) => {
+            if (chrome.runtime.lastError || !response || !response.success) return;
+            chrome.storage.local.get('applications', (data) => {
+              const applications = data.applications || [];
+              const hasDuplicateUrl = applications.some(app => app.url === response.data.url);
+
+              if (hasDuplicateUrl) {
+                addManuallyBtn.classList.add('hidden')
+                addManuallyBtnContainer.innerHTML = "<h2>⚠️ This job posting has already been saved ⚠️</h2>"
+              } else {
+                apps.fillForm(response.data);
+                currentJobSection.classList.remove('hidden');
+              }
+            });
+          };
+
+          // Send message to content script; if it's not running (e.g. after an
+          // extension reload without refreshing the tab), inject it first.
           chrome.tabs.sendMessage(currentTab.id, { action: "getJobDetails" }, (response) => {
-            if (response && response.success) {
-              chrome.storage.local.get('applications', (data) => {
-                const applications = data.applications || [];
-                const hasDuplicateUrl = applications.some(app => app.url === response.data.url);
-
-                if (hasDuplicateUrl) {
-                  addManuallyBtn.classList.add('hidden')
-                  addManuallyBtnContainer.innerHTML = "<h2>⚠️ This job posting has already been saved ⚠️</h2>"
-                } else {
-                  apps.fillForm(response.data);
-                  currentJobSection.classList.remove('hidden');
-                }
-
-              })
+            if (chrome.runtime.lastError) {
+              chrome.scripting.executeScript(
+                { target: { tabId: currentTab.id }, files: ['content.js'] },
+                () => chrome.tabs.sendMessage(currentTab.id, { action: "getJobDetails" }, handleJobDetails)
+              );
+              return;
             }
+            handleJobDetails(response);
           });
         }
         
