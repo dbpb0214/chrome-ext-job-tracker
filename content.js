@@ -188,7 +188,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         input.dispatchEvent(new Event('change', { bubbles: true }));
       };
 
-      const ashbyNameLabel = ashbyLabels.find(label => label.textContent.trim() === 'Name');
+      const ashbyNameLabel = ashbyLabels.find(label => {
+        const text = label.textContent.trim();
+        return text === 'Name' || text === 'Full Name';
+      });
       const ashbyNameInput = ashbyNameLabel
         ? document.getElementById(ashbyNameLabel.getAttribute('for'))
         : null;
@@ -204,7 +207,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         fillReactInput(ashbyEmailInput, formData.email);
       }
 
-      const ashbyPhoneLabel = ashbyLabels.find(label => label.textContent.trim() === 'Phone Number');
+      const ashbyPhoneLabel = ashbyLabels.find(label => {
+        const text = label.textContent.trim();
+        return text === 'Phone Number' || text === 'Phone';
+      });
       const ashbyPhoneInput = ashbyPhoneLabel
         ? document.getElementById(ashbyPhoneLabel.getAttribute('for'))
         : null;
@@ -307,7 +313,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             locationInput.dispatchEvent(new Event('input', { bubbles: true }));
             locationInput.dispatchEvent(new Event('change', { bubbles: true }));
             const locationObserver = new MutationObserver(() => {
-              const firstOption = document.querySelector('.select__menu [role="option"]');
+              const firstOption = document.querySelector('[role="listbox"] [role="option"]');
               if (firstOption) {
                 locationObserver.disconnect();
                 firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
@@ -320,51 +326,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         }
 
-        // Try native <select> first (some Greenhouse pages include a hidden one)
-        const nativeCountrySelect = Array.from(document.querySelectorAll('select')).find(select =>
-          Array.from(select.options).some(opt => opt.textContent.includes('United States'))
-        );
-
-        if (nativeCountrySelect) {
-          const usOption = Array.from(nativeCountrySelect.options).find(opt =>
-            opt.textContent.includes('United States')
-          );
-          if (usOption) {
-            const nativeSelectSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
-            nativeSelectSetter.call(nativeCountrySelect, usOption.value);
-            nativeCountrySelect.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }
-
-        // Greenhouse uses a React Select custom dropdown for Country — the native
-        // select alone doesn't update React state, so validation still fails.
-        // Find the combobox input inside the country field and drive it the same
-        // way we handle the location field.
-        const countryInput = document.getElementById('country-error')
-          ?.parentElement
-          ?.querySelector('input[role="combobox"]');
-
-        if (countryInput) {
-          const countryNativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-          countryInput.focus();
-          countryNativeSetter.call(countryInput, 'United States');
-          countryInput.dispatchEvent(new Event('input', { bubbles: true }));
-          countryInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-          const countryObserver = new MutationObserver(() => {
-            const options = document.querySelectorAll('.select__menu [role="option"]');
-            const usOption = Array.from(options).find(opt => opt.textContent.includes('United States'));
-            const targetOption = usOption || options[0];
-            if (targetOption) {
-              countryObserver.disconnect();
-              targetOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-              targetOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-              targetOption.click();
-            }
-          });
-          countryObserver.observe(document.body, { childList: true, subtree: true });
-          setTimeout(() => countryObserver.disconnect(), 5000);
-        }
+        // Country uses a React Select whose onChange closure lives in the page's
+        // main world. Message the background to run the fiber-walking code via
+        // chrome.scripting.executeScript({ world: 'MAIN' }), which bypasses CSP.
+        chrome.runtime.sendMessage({ action: 'setCountryMainWorld' });
 
         if (formData.resume) {
           const resumeInput = document.querySelector('input[name="resume"]')
