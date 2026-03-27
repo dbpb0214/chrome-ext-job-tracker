@@ -306,24 +306,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // React Select's search from within the content script (isolated world),
         // then mousedown + mouseup + click selects the first option.
         if (formData.location) {
-          const locationInput = document.getElementById('candidate-location');
-          if (locationInput) {
-            const nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-            nativeInputSetter.call(locationInput, formData.location);
-            locationInput.dispatchEvent(new Event('input', { bubbles: true }));
-            locationInput.dispatchEvent(new Event('change', { bubbles: true }));
-            const locationObserver = new MutationObserver(() => {
-              const firstOption = document.querySelector('[role="listbox"] [role="option"]');
-              if (firstOption) {
-                locationObserver.disconnect();
-                firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                firstOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-                firstOption.click();
-              }
-            });
-            locationObserver.observe(document.body, { childList: true, subtree: true });
-            setTimeout(() => locationObserver.disconnect(), 5000);
-          }
+          chrome.runtime.sendMessage({ action: 'setLocationMainWorld', location: formData.location });
         }
 
         // Country uses a React Select whose onChange closure lives in the page's
