@@ -33,9 +33,11 @@
           "*://jobs.lever.co/*",
           "*://*/*/career/*",
           "*://*/careers/*",
-          "*://*/apply/*"
+          "*://*/apply/*",
+          "*://*/*?*gh_jid=*"
         ],
-        "js": ["content.js"]
+        "js": ["content.js"],
+        "all_frames": true
       }
     ]
   }

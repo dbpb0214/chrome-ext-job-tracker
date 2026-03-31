@@ -92,7 +92,7 @@
         // Add more job sites as needed
       ];
       
-      return jobSites.some(site => url.includes(site));
+      return jobSites.some(site => url.includes(site)) || url.includes('gh_jid=');
     }
     
   });

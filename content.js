@@ -59,6 +59,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (h1El) {
         jobTitle = h1El.textContent.trim();
       }
+    } else if (url.includes('gh_jid=')) {
+      const titleEl = document.querySelector('title');
+      if (titleEl) {
+        company = extractCompanyName(titleEl.textContent.trim());
+      }
+      const jobTitleEl = document.querySelector('.job__title h1, h1.app-title');
+      if (jobTitleEl) {
+        jobTitle = jobTitleEl.textContent.trim();
+      }
     } else if (url.includes('?ashby_jid') || url.includes('jobs.ashbyhq.com')) {
       const companyElements = document.querySelectorAll('title');
       if (companyElements.length > 0) {
@@ -302,9 +311,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
 
       if (url.includes('greenhouse.io')) {
-        // Location (City): same pattern as Ashby location — native setter triggers
-        // React Select's search from within the content script (isolated world),
-        // then mousedown + mouseup + click selects the first option.
         if (formData.location) {
           chrome.runtime.sendMessage({ action: 'setLocationMainWorld', location: formData.location });
         }
@@ -353,8 +359,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (jobBoardLinkedInInput) {
-      const linkedInNativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-      linkedInNativeSetter.call(jobBoardLinkedInInput, formData.linkedin);
+      inputNativeSetter.call(jobBoardLinkedInInput, formData.linkedin);
       jobBoardLinkedInInput.dispatchEvent(new Event('input', { bubbles: true }));
       jobBoardLinkedInInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
