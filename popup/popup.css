@@ -12,6 +12,10 @@
 }
 
 
+html {
+  width: 382px;
+}
+
 body {
     font-family: Arial, sans-serif;
     width: 350px;
