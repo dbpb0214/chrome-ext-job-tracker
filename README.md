@@ -12,7 +12,7 @@ Job Application Tracker Chrome Extension helps job seekers organize their job se
 ## Features
 
 - **One-Click Job Capture**: Save job listings from popular job boards with a single click while avoiding saving duplicate applications
-- **Smart Data Extraction**: Automatically extracts company, position, and job description details
+- **Smart Data Extraction**: Automatically extracts company name and job title
 - **Status Tracking**: Track application status (Applied, Interview Scheduled, Rejected, Offer, etc.)
 - **Notes**: Add notes for each application
 - **Data Export**: Export your job tracking data as a txt file
@@ -20,6 +20,10 @@ Job Application Tracker Chrome Extension helps job seekers organize their job se
 ## Compatible Job Boards
 (more coming soon!)
 - greenhouse.io
+- lever.co
+- ashbyhq.com
+- builtinnyc.com
+- generic `/careers/*`, `/apply/*`, `/*/career/*` URL patterns
 
 ## Installation
 
@@ -29,14 +33,14 @@ Note: not yet available!
 ### Developer Installation
 1. Clone the repository:
    ```
-   git clone https://github.com/dbpb0214/https://github.com/dbpb0214/
+   git clone https://github.com/dbpb0214/chrome-ext-job-tracker.git
    cd chrome-ext-job-tracker
    ```
 
 4. Load the extension in Chrome:
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" in the top-right corner
-   - Click "Load unpacked" and select the `dist` folder from your project directory
+   - Click "Load unpacked" and select the project root directory (no build step required)
 
 ## Tech Stack
 
@@ -53,8 +57,7 @@ Note: not yet available!
 
 ## Development
 
-### Prerequisites
-- Node.js (v14+)
+No build step — pure vanilla JS. Edit files, reload extension in `chrome://extensions/` to test.
 
 ## Privacy Policy
 

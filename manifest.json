@@ -10,7 +10,15 @@
       "tabs"
     ],
     "host_permissions": [
-      "*://*/*" 
+      "*://*.job-boards.greenhouse.io/*",
+      "*://*.flocksafety.com/*",
+      "*://*.jobs.ashbyhq.com/*",
+      "*://*.builtinnyc.com/*",
+      "*://jobs.lever.co/*",
+      "*://*/*/career/*",
+      "*://*/careers/*",
+      "*://*/apply/*",
+      "*://*/*?*gh_jid=*"
     ],
     "action": {
       "default_popup": "popup/popup.html",

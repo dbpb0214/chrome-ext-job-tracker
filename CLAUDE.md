@@ -18,7 +18,7 @@ This is a Manifest V3 Chrome extension with three main components:
 
 **`background.js`** — Service worker that initializes `chrome.storage.local` with an empty `applications` array on install.
 
-**`content.js`** — Injected into job board pages (greenhouse.io, ashbyhq.com, and career URL patterns). Listens for two messages from the popup:
+**`content.js`** — Injected into job board pages (greenhouse.io, lever.co, ashbyhq.com, builtinnyc.com, flocksafety.com, and generic career/apply URL patterns). Listens for two messages from the popup:
 - `getJobDetails` — Extracts company name and job title from DOM, returns them to popup
 - `updateJobApplicationForm` — Fills in application form fields (name, email, phone, LinkedIn) using stored applicant data
 
@@ -28,7 +28,6 @@ This is a Manifest V3 Chrome extension with three main components:
 - `popup/handlers/eventHandlers.js` — Wires DOM events to module methods
 - `popup/modules/applications.js` — CRUD for job applications stored under the `applications` key in `chrome.storage.local`; handles display, save, delete, export to `.txt`
 - `popup/modules/applicants.js` — CRUD for the single applicant profile stored under the `applicant` key; includes resume upload (stored as base64 via FileReader), auto-fill dispatch to content script
-- `popup/modules/event-handlers.js` — Unused legacy file (superseded by `popup/handlers/eventHandlers.js`)
 
 ## Storage Schema
 
@@ -66,10 +65,11 @@ This is a Manifest V3 Chrome extension with three main components:
 
 ## Adding Support for New Job Boards
 
-Two places must be updated:
+Three places must be updated:
 
 1. **`manifest.json`** — Add the site pattern to `content_scripts[0].matches`
-2. **`content.js`** — Add a new `else if` branch in `extractJobDetails()` with site-specific DOM selectors for company name and job title
-3. **`popup.js`** — Add the hostname to the `jobSites` array in `isKnownJobSite()`
+2. **`manifest.json`** — Also add the same pattern to `host_permissions` (kept in sync with `content_scripts[0].matches`)
+3. **`content.js`** — Add a new `else if` branch in `extractJobDetails()` with site-specific DOM selectors for company name and job title
+4. **`popup.js`** — Add the hostname to the `jobSites` array in `isKnownJobSite()`
 
 The `extractCompanyName()` helper in `content.js` parses page titles of the form `"Job Title at Company Name"` by finding the word `"at"` or `"@"`.
